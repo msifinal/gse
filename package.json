@@ -1,0 +1,21 @@
+{
+  "name": "green-story-engine",
+  "version": "0.3.0",
+  "private": true,
+  "description": "Task runner only. Green Story Engine itself is a Python/JS project distributed via GitHub Releases - see README.md.",
+  "scripts": {
+    "validate": "python cli/gse.py validate stories/demo/demo.gse",
+    "run": "python cli/gse.py run stories/demo/demo.gse",
+    "dump": "python cli/gse.py dump stories/demo/demo.gse",
+    "build": "python cli/gse.py build stories/demo/demo.gse",
+    "serve": "python cli/gse.py serve stories/demo/demo.gse",
+    "edit": "python cli/gse.py edit stories/demo/demo.gse",
+    "studio": "python cli/gse.py studio",
+    "demo": "python cli/gse.py run stories/demo/demo.gse --script 1 1 1 1 1 1 1 1",
+    "selftest": "python cli/gse.py selftest",
+    "test": "python -m unittest discover -s tests -v",
+    "package": "python tools/package.py",
+    "freeze": "python tools/freeze.py --clean"
+  },
+  "license": "MIT"
+}

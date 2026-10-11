@@ -1,0 +1,107 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to publish (e.g. v0.3.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: studio-zipapp
+            os: ubuntu-latest
+            kind: zipapp
+          - name: exe-windows
+            os: windows-latest
+            kind: freeze
+          - name: exe-linux
+            os: ubuntu-latest
+            kind: freeze
+          - name: exe-macos
+            os: macos-latest
+            kind: freeze
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyInstaller
+        run: python -m pip install --upgrade pip pyinstaller
+
+      - name: Validate demo story
+        run: python cli/gse.py validate stories/demo/demo.gse
+
+      - name: Self-test
+        run: python cli/gse.py selftest
+
+      - name: Unit tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Build portable studio (zipapp)
+        run: python tools/package.py
+
+      - name: Build standalone executable
+        if: matrix.kind == 'freeze'
+        run: python tools/freeze.py --clean
+
+      - name: Assemble zipapp archive
+        if: matrix.kind == 'zipapp'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd dist
+          if command -v zip >/dev/null; then
+            zip -qr "../green-story-engine-studio.zip" .
+          else
+            python -c "import shutil;shutil.make_archive('../green-story-engine-studio','zip','.')"
+          fi
+          cd ..
+          cp green-story-engine-studio.zip build/green-story-engine-studio.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: |
+            build/freeze/release/
+            build/green-story-engine-studio.zip
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Collect release assets
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          find artifacts -type f \( -name 'gse' -o -name 'gse.exe' -o -name '*.zip' \) \
+            -exec cp {} release/ \;
+          (cd release && ls -la)
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag || github.ref_name }}
+          name: Green Story Engine ${{ inputs.tag || github.ref_name }}
+          draft: true
+          generate_release_notes: true
+          files: release/*

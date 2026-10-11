@@ -1,0 +1,22 @@
+# python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+venv/
+
+# build output
+build/
+dist/
+*.spec
+
+# local story state + secrets
+*.save.json
+.gse_credentials.json
+
+# os / editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

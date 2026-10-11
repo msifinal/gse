@@ -1,0 +1,16 @@
+# normalise line endings in the repo
+* text=auto eol=lf
+
+# Windows launchers must stay CRLF
+*.cmd  text eol=crlf
+*.bat  text eol=crlf
+
+# binary
+*.svg  text eol=lf
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.ico  binary
+*.pyz  binary

@@ -1,0 +1,174 @@
+:: config
+{
+  "title": "The Staple Pitch",
+  "credit": "demo - a very safe conversation about office supplies",
+  "start": "start",
+  "mediaDir": "media",
+  "charStats": {
+    "impressed": {
+      "label": "Impressed",
+      "min": 0,
+      "max": 100,
+      "start": 25
+    },
+    "decision": {
+      "label": "Decision",
+      "values": [
+        "undecided",
+        "interested",
+        "bought"
+      ],
+      "start": "undecided"
+    }
+  },
+  "globals": {
+    "claims": {
+      "label": "Claims heard",
+      "min": 0,
+      "max": 9,
+      "start": 0
+    }
+  },
+  "characters": {
+    "player": {
+      "name": "You",
+      "status": "Here to buy a stapler. Maybe.",
+      "icons": [
+        {
+          "id": "skeptical",
+          "img": "you_skeptical.svg",
+          "when": {
+            "impressed": {
+              "max": 39
+            }
+          }
+        },
+        {
+          "id": "sold",
+          "img": "you_happy.svg",
+          "when": {
+            "decision": "interested"
+          }
+        },
+        {
+          "id": "plain",
+          "img": "you_plain.svg"
+        }
+      ]
+    },
+    "sales": {
+      "name": "Alex Crane",
+      "status": "Selling staplers. Professionally unimpressed by skepticism.",
+      "icons": [
+        {
+          "id": "plain",
+          "img": "sales_plain.svg"
+        }
+      ]
+    }
+  },
+  "modals": {
+    "jansen": {
+      "title": "Jansen 3000 \u2014 Spec Sheet",
+      "text": "Jams: never.\nWarranty: ten years.\nUtility: complete.\nThe salesperson did not write this. Probably."
+    }
+  }
+}
+
+:: start
+image:: office.svg A quiet Monday morning in the break room.
+The break room, 8:40 AM. A colleague walks over holding a stapler in each hand and a hopeful expression.
+[[Say hello|hello]]
+
+:: hello
+speaker:: sales
+[open:sales]Inspect the salesperson[/open]. Good morning! Glad I caught you. Five minutes of your time?
+speaker:: player
+That depends entirely on what you're selling.
+speaker:: sales
+The Jansen 3000. The last stapler you will ever need.
+set:: claims + 1
+[[Ask about the price|price]]
+[[Sound intrigued|intrigued]]
+
+:: intrigued
+speaker:: player
+A stapler that claims to be the last one? That is a bold product promise.
+speaker:: sales
+Bold is our brand, yes. Also we did the research.
+set:: claims + 1
+[[Okay, tell me about the price|price]]
+
+:: price
+speaker:: sales
+It is twenty-nine ninety-nine. Which, yes, sounds like a lot for a stapler.
+speaker:: player
+For a stapler, that is a lot for a stapler.
+speaker:: sales
+But consider everything you get: one-handed operation, a jam-free mechanism, and it holds two hundred sheets at once.
+set:: claims + 1
+[[That is a lot of sheets|compare]]
+[[Still not convinced|not_convinced]]
+
+:: compare
+set:: impressed + 25
+speaker:: player
+Two hundred sheets. My current stapler gives up after a week of menus.
+speaker:: sales
+Exactly. Think of the paperclips you will retire early.
+speaker:: player
+That is... not how paperclips work.
+speaker:: sales
+The point stands: fewer jams, fewer unhappy desk drawers.
+set:: claims + 1
+[[Ask about the warranty|warranty]]
+
+:: warranty
+set:: impressed + 15
+speaker:: sales
+Ten-year warranty. If it ever jams, we replace it, no questions asked.
+[open:modal.jansen]Read the spec sheet[/open].
+speaker:: player
+That does remove the main argument against it.
+speaker:: sales
+And today only, I will throw in a box of mixed staples. The good ones.
+[[Check my budget|budget]]
+[[Honestly, you have sold me|buy_now]] if:: impressed >= 60
+
+:: budget
+set:: decision = interested
+set:: impressed + 10
+image:: office.svg The afternoon sun arrives and brightens the room.
+speaker:: player
+Two hundred sheets, a ten-year warranty, and good staples. That is a surprisingly complete offering.
+[[Do it. Buy the stapler.|buy_now]]
+[[Maybe next quarter|pass]]
+
+:: buy_now
+set:: decision = bought
+set:: impressed + 20
+speaker:: player
+Fine. One Jansen 3000. You have earned this sale.
+speaker:: sales
+You will not regret a single staple.
+goto:: endings
+
+:: not_convinced
+speaker:: player
+A stapler cannot change my life, Alex.
+speaker:: sales
+I understand completely. But one day a pile of paper will be there, and you will remember me.
+goto:: endings
+
+:: pass
+speaker:: player
+I will think about it. Professionally. After lunch.
+speaker:: sales
+That is all I ask. The box of staples stays open if you change your mind.
+goto:: endings
+
+:: endings [ending]
+image:: office.svg The break room settles back into its usual quiet rhythm.
+speaker:: player
+However it went, the office supply situation was thoroughly discussed today.
+-- The end --

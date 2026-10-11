@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Green Story Engine — Story Editor</title>
+<link rel="stylesheet" href="editor.css"/>
+</head>
+<body>
+<div id="topbar">
+  <div class="brand">Green Story Engine <span class="brand-sub">editor</span></div>
+  <div class="tb-right">
+    <span id="dirty" class="dirty" hidden>unsaved</span>
+    <button id="btn-open" class="btn" title="Open a story or create a new one">Open / New</button>
+    <button id="btn-theme" class="btn" title="Toggle light / dark">Light/Dark</button>
+    <a id="btn-play" class="btn" href="/play" target="_blank" title="Play the story in a new tab">Play</a>
+    <button id="btn-save" class="btn primary" title="Save the story file">Save</button>
+  </div>
+</div>
+<div id="msg" class="msg" hidden></div>
+<div id="layout">
+  <aside id="side">
+    <div class="story-meta">
+      <input id="inp-title" class="title-input" placeholder="Story title"/>
+      <div id="story-file" class="file-chip"></div>
+    </div>
+    <div class="side-nav">
+      <button id="tab-beats" class="nav-btn active">Beats</button>
+      <button id="tab-settings" class="nav-btn">Settings</button>
+    </div>
+    <div id="beat-list" class="beat-list"></div>
+    <button id="add-beat" class="side-btn">+ New beat</button>
+  </aside>
+  <main id="main"></main>
+</div>
+<div id="modal-root" hidden></div>
+<script src="core.js"></script>
+<script src="editor.js"></script>
+</body>
+</html>
