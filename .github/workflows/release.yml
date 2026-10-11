@@ -29,9 +29,6 @@ jobs:
           - name: exe-linux
             os: ubuntu-latest
             kind: freeze
-          - name: exe-macos
-            os: macos-latest
-            kind: freeze
 
     steps:
       - uses: actions/checkout@v4

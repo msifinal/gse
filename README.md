@@ -18,7 +18,7 @@ No dependencies. Browser engine is plain JS; CLI + compiler are pure Python 3 st
 | asset | use |
 |---|---|
 | `gse.exe` | Windows standalone executable (`gse.exe studio`, `gse.exe edit <story>`) |
-| `gse` | Linux / macOS standalone executable |
+| `gse` | Linux standalone executable |
 | `green-story-engine-studio.zip` | portable studio folder (`Start Studio.cmd`, `gse.cmd`, engine + demo stories) |
 
 Unzip or drop the executable in any folder you control. `engine/`, `editor/` and
@@ -280,7 +280,7 @@ and the editor API round-trip. All stdlib, no network required.
 ## Contributing
 
 `python cli/gse.py validate`, `selftest` and the unit suite run on every push
-across Linux, Windows and macOS. Keep `engine/core.js` and `cli/gse.py` in sync —
+across Linux and Windows. Keep `engine/core.js` and `cli/gse.py` in sync —
 they implement the same semantics — and re-run the suite after changing either.
 
 ## License

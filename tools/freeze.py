@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build a standalone gse executable with PyInstaller.
 
-Produces a single `gse.exe` (or `gse` on macOS/Linux) that needs no Python
+Produces a single `gse.exe` (or `gse` on Linux) that needs no Python
 installed. The engine assets (engine/, editor/, stories/) are embedded and
 copied next to the executable on first run, so `gse new` can still write into a
 writeable folder beside the binary.

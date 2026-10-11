@@ -21,7 +21,7 @@ python tools/freeze.py --clean                    # PyInstaller executable -> bu
 
 `engine/core.js` and `cli/gse.py` implement the same semantics. After touching
 either, run `validate` + `selftest` + the unit suite. CI runs all three on
-Linux, Windows and macOS.
+Linux and Windows.
 
 ## Code that is frozen-compatible
 
@@ -34,7 +34,7 @@ Linux, Windows and macOS.
 ## Releases
 
 Push a `v*` tag. `.github/workflows/release.yml` builds the zipapp studio plus
-standalone `gse` / `gse.exe` binaries per OS and attaches them to a **draft**
+standalone `gse` (Linux) / `gse.exe` (Windows) binaries and attaches them to a **draft**
 GitHub Release — review and publish it manually. `build/`, `dist/`, `*.spec`,
 `__pycache__/` and `*.save.json` are gitignored build output; never commit them.
 Secrets live in `CF_API_TOKEN` / `CF_ACCOUNT_ID` env vars or
