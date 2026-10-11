@@ -1980,6 +1980,8 @@ def cmd_selftest(args):
                 return r.status, r.read().decode("utf-8")
         except urllib.error.HTTPError as e:
             return e.code, e.read().decode("utf-8")
+        except urllib.error.URLError:
+            return None, ""
 
     print("one story engine checks")
     story, p = load_story(str(DEMO))
@@ -2005,36 +2007,70 @@ def cmd_selftest(args):
         with socket.socket() as s:
             s.bind(("127.0.0.1", 0))
             port = s.getsockname()[1]
-        proc = subprocess.Popen(
-            [sys.executable] + me + ["edit", str(story_file), "--port", str(port)],
-            env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        server_log = Path(td) / "edit-server.log"
+        with server_log.open("w", encoding="utf-8") as log:
+            proc = subprocess.Popen(
+                [sys.executable] + me + ["edit", str(story_file), "--port", str(port)],
+                env=env, stdout=subprocess.DEVNULL, stderr=log)
+
+        def _port_open():
+            try:
+                with socket.create_connection(("127.0.0.1", port), timeout=1):
+                    return True
+            except OSError:
+                return False
+
+        # wait for the editor server to accept connections (slow CI runners
+        # need a moment between process spawn and listen)
+        server_up = False
+        deadline = time.time() + 30
+        while time.time() < deadline:
+            if proc.poll() is not None:
+                break
+            if _port_open():
+                server_up = True
+                break
+            time.sleep(0.2)
+        log_text = ""
         try:
-            code, text = http("/api/story", port=port)
-            check("GET /api/story works", code == 200 and "cfg_demo" in text)
+            log_text = server_log.read_text(encoding="utf-8", errors="replace")[-2000:]
+        except OSError:
+            pass
+        extra = ""
+        if not server_up:
+            extra = log_text.strip().splitlines()[-1] if log_text.strip() else "port %d never opened" % port
+        check("editor server starts", server_up, extra)
+        try:
+            if not server_up:
+                if log_text.strip():
+                    print("  -- server log:\n%s" % log_text)
+            else:
+                code, text = http("/api/story", port=port)
+                check("GET /api/story works", code == 200 and "cfg_demo" in text)
 
-            code, text = http("/api/stories", port=port)
-            check("GET /api/stories lists cfg_demo", code == 200 and "cfg_demo" in text)
+                code, text = http("/api/stories", port=port)
+                check("GET /api/stories lists cfg_demo", code == 200 and "cfg_demo" in text)
 
-            code, text = http("/api/new", body=json.dumps({"name": "Magic Town"}), port=port)
-            check("POST /api/new creates story", code == 200 and "Magic-Town" in text)
+                code, text = http("/api/new", body=json.dumps({"name": "Magic Town"}), port=port)
+                check("POST /api/new creates story", code == 200 and "Magic-Town" in text)
 
-            code, text = http("/api/open?name=Magic-Town", port=port)
-            check("GET /api/open switches story", code == 200)
+                code, text = http("/api/open?name=Magic-Town", port=port)
+                check("GET /api/open switches story", code == 200)
 
-            code, text = http("/api/story", port=port)
-            check("current story is the new one", code == 200 and 'Magic-Town' in text)
+                code, text = http("/api/story", port=port)
+                check("current story is the new one", code == 200 and 'Magic-Town' in text)
 
-            code, text = http("/api/story", port=port)
-            import re as _re
-            new_text = _re.sub(r'"title": "Magic Town"', '"title": "Rebound"', text)
-            code, text = http("/api/story", body=new_text, port=port)
-            check("POST /api/story saves story", code == 200 and '"ok": true' in text)
+                code, text = http("/api/story", port=port)
+                import re as _re
+                new_text = _re.sub(r'"title": "Magic Town"', '"title": "Rebound"', text)
+                code, text = http("/api/story", body=new_text, port=port)
+                check("POST /api/story saves story", code == 200 and '"ok": true' in text)
 
-            code, text = http("/play", port=port)
-            check("GET /play renders the game", code == 200 and "magic-town" in text.lower())
+                code, text = http("/play", port=port)
+                check("GET /play renders the game", code == 200 and "magic-town" in text.lower())
 
-            code, text = http("/api/open?name=nope_zzz", port=port)
-            check("GET /api/open rejects unknown story", code == 400)
+                code, text = http("/api/open?name=nope_zzz", port=port)
+                check("GET /api/open rejects unknown story", code == 400)
         finally:
             proc.terminate()
             try:
