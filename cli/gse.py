@@ -1994,6 +1994,10 @@ def cmd_selftest(args):
     with tempfile.TemporaryDirectory() as td:
         env = dict(os.environ)
         env["GSE_APP_ROOT"] = td
+        # unbuffered child output: the startup banner must reach the log
+        # file immediately, otherwise an empty log cannot distinguish
+        # "stuck before listen" from "listening but unreachable"
+        env["PYTHONUNBUFFERED"] = "1"
         import shutil
         shutil.copytree(ENGINE_DIR, Path(td) / "engine")
         shutil.copytree(EDITOR_DIR, Path(td) / "editor")
@@ -2043,7 +2047,8 @@ def cmd_selftest(args):
             rc = proc.poll()
             log_tail = log_text.strip().splitlines()[-1] if log_text.strip() else "(server log empty)"
             if rc is None:
-                extra = "port %d never opened; server still running; argv=%s; log tail: %s" % (port, child_argv[-3:], log_tail)
+                banner = "banner printed" if "Story Editor" in log_text else "no banner"
+                extra = "port %d never opened; server still running (%s); argv=%s; log tail: %s" % (port, banner, child_argv[-3:], log_tail)
             else:
                 extra = "port %d never opened; server exited rc=%s; log tail: %s" % (port, rc, log_tail)
         check("editor server starts", server_up, extra)
