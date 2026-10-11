@@ -2008,10 +2008,12 @@ def cmd_selftest(args):
             s.bind(("127.0.0.1", 0))
             port = s.getsockname()[1]
         server_log = Path(td) / "edit-server.log"
+        child_argv = [sys.executable] + me + ["edit", str(story_file), "--port", str(port)]
         with server_log.open("w", encoding="utf-8") as log:
             proc = subprocess.Popen(
-                [sys.executable] + me + ["edit", str(story_file), "--port", str(port)],
-                env=env, stdout=subprocess.DEVNULL, stderr=log)
+                child_argv,
+                env=env, stdin=subprocess.DEVNULL,
+                stdout=log, stderr=subprocess.STDOUT)
 
         def _port_open():
             try:
@@ -2038,7 +2040,12 @@ def cmd_selftest(args):
             pass
         extra = ""
         if not server_up:
-            extra = log_text.strip().splitlines()[-1] if log_text.strip() else "port %d never opened" % port
+            rc = proc.poll()
+            log_tail = log_text.strip().splitlines()[-1] if log_text.strip() else "(server log empty)"
+            if rc is None:
+                extra = "port %d never opened; server still running; argv=%s; log tail: %s" % (port, child_argv[-3:], log_tail)
+            else:
+                extra = "port %d never opened; server exited rc=%s; log tail: %s" % (port, rc, log_tail)
         check("editor server starts", server_up, extra)
         try:
             if not server_up:

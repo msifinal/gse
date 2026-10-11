@@ -64,6 +64,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          mkdir -p build
           cd dist
           if command -v zip >/dev/null; then
             zip -qr "../green-story-engine-studio.zip" .
